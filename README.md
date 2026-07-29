@@ -55,6 +55,7 @@ GraphQL Playground
 http://localhost:9000/graphql
 
 Sample Queries
+
 Signup:
 
 mutation {
@@ -62,11 +63,13 @@ mutation {
     id name email role
   }
 }
+
 Login:
 
 mutation {
   login(email: "john@test.com", password: "123456")
 }
+
 Create Job:
 
 mutation {
@@ -81,6 +84,7 @@ mutation {
     id title company
   }
 }
+
 Apply to Job:
 
 mutation {
@@ -92,6 +96,7 @@ mutation {
     id status
   }
 }
+
 View Jobs:
 
 query {
@@ -99,6 +104,7 @@ query {
     id title company location
   }
 }
+
 Save Job:
 
 mutation {
