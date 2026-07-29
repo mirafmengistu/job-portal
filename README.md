@@ -17,6 +17,8 @@ GraphQL-based Job Portal API built with Node.js, Express, MongoDB.
 - bcryptjs
 
 ## Project Structure
+
+```bash
 server/src/
 ├── app.js
 ├── config/
