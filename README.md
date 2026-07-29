@@ -17,32 +17,31 @@ GraphQL-based Job Portal API built with Node.js, Express, MongoDB.
 - bcryptjs
 
 ## Project Structure
-src/
+server/src/
 ├── app.js
 ├── config/
-│ └── db.js
+│   └── db.js
 ├── models/
-│ ├── User.js
-│ ├── Job.js
-│ └── Application.js
+│   ├── User.js
+│   ├── Job.js
+│   └── Application.js
 ├── graphql/
-│ ├── types/
-│ │ ├── UserType.js
-│ │ ├── JobType.js
-│ │ └── ApplicationType.js
-│ ├── queries/
-│ │ ├── userQueries.js
-│ │ ├── jobQueries.js
-│ │ ├── applicationQueries.js
-│ │ └── RootQuery.js
-│ ├── mutations/
-│ │ ├── userMutation.js
-│ │ ├── jobMutation.js
-│ │ ├── applicationMutation.js
-│ │ └── rootMutation.js
-│ └── index.js
+│   ├── type/
+│   │   ├── UserType.js
+│   │   ├── JobType.js
+│   │   └── ApplicationType.js
+│   ├── query/
+│   │   ├── userQueries.js
+│   │   ├── jobQueries.js
+│   │   ├── applicationQueries.js
+│   │   └── RootQuery.js
+│   └── mutation/
+│       ├── userMutation.js
+│       ├── jobMutation.js
+│       ├── applicationMutation.js
+│       └── rootMutation.js
 └── schema/
-└── schema.js
+    └── schema.js
 
 ## Quick Start
 ```bash
