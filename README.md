@@ -17,65 +17,57 @@ GraphQL-based Job Portal API built with Node.js, Express, MongoDB.
 - bcryptjs
 
 ## Project Structure
-```
 src/
 ├── app.js
-├── config/db.js
+├── config/
+│ └── db.js
 ├── models/
-│   ├── User.js
-│   ├── Job.js
-│   └── Application.js
+│ ├── User.js
+│ ├── Job.js
+│ └── Application.js
 ├── graphql/
-│   ├── types/
-|   |   ├── UserType.js
-│   |   ├── JobType.js
-│   |   └── ApplicationType.js
-│   ├── queries/
-|   |   ├── userQueries.js
-│   |   ├── jobQueries.js
-│   |   └── applicationQueries.js
-|   |   └── RootQueries.js
-│   └── mutations/
-|   |     ├── userMutation.js
-│   |     ├── jobMutation.js
-│   |     └── applicationMutation.js
-|   |     └── rootMutation.js
-|   └── index.js
-└── schema/schema.js
-```
+│ ├── types/
+│ │ ├── UserType.js
+│ │ ├── JobType.js
+│ │ └── ApplicationType.js
+│ ├── queries/
+│ │ ├── userQueries.js
+│ │ ├── jobQueries.js
+│ │ ├── applicationQueries.js
+│ │ └── RootQuery.js
+│ ├── mutations/
+│ │ ├── userMutation.js
+│ │ ├── jobMutation.js
+│ │ ├── applicationMutation.js
+│ │ └── rootMutation.js
+│ └── index.js
+└── schema/
+└── schema.js
 
 ## Quick Start
 ```bash
 npm install
 # Create .env file
 node src/app.js
-```
 
-## GraphQL Playground
-```
+GraphQL Playground
 http://localhost:9000/graphql
-```
 
-## Sample Queries
+Sample Queries
+Signup:
 
-**Signup:**
-```graphql
 mutation {
   signup(name: "John", email: "john@test.com", password: "123456", role: "seeker") {
     id name email role
   }
 }
-```
+Login:
 
-**Login:**
-```graphql
 mutation {
   login(email: "john@test.com", password: "123456")
 }
-```
+Create Job:
 
-**Create Job:**
-```graphql
 mutation {
   createJob(
     title: "Developer"
@@ -88,10 +80,8 @@ mutation {
     id title company
   }
 }
-```
+Apply to Job:
 
-**Apply to Job:**
-```graphql
 mutation {
   applyToJob(
     jobId: "JOB_ID"
@@ -101,35 +91,28 @@ mutation {
     id status
   }
 }
-```
+View Jobs:
 
-**View Jobs:**
-```graphql
 query {
   jobs(search: "Developer", location: "Remote") {
     id title company location
   }
 }
-```
+Save Job:
 
-**Save Job:**
-```graphql
 mutation {
   saveJob(userId: "USER_ID", jobId: "JOB_ID") {
     id name
   }
 }
-```
 
-## Database Models
+Database Models
+User: name, email, password, role(seeker/recruiter), savedJobs[]
+Job: title, company, description, location, type, salary, requirements, postedBy
+Application: job, applicant, coverLetter, resume, status(pending/reviewing/hired/rejected)
 
-**User:** name, email, password, role(seeker/recruiter), savedJobs[]
-**Job:** title, company, description, location, type, salary, requirements, postedBy
-**Application:** job, applicant, coverLetter, resume, status(pending/reviewing/hired/rejected)
-
-## Author
+Author
 Built as part of full-stack development learning journey.
 
-## License
+License
 Educational purposes only.
-
