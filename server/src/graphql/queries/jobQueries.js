@@ -1,6 +1,8 @@
-import { GraphQLID, GraphQLList, GraphQLString } from "graphql";
+import { GraphQLID, GraphQLList, GraphQLString, GraphQLObjectType } from "graphql";
 import JobType from "../types/JobType.js";
 import { Job } from "../../models/Job.js";
+import { User } from "../../models/User.js"; // ✅ Add this import
+import { Application } from "../../models/Application.js"; // ✅ Add this import
 
 export const jobQueries = {
   // Get all jobs (with optional filters)
@@ -66,13 +68,56 @@ export const jobQueries = {
     },
     async resolve(parent, args) {
       try {
-        const jobs = await Job.find({ 
+        const jobs = await Job.find({
           postedBy: args.recruiterId,
-          isActive: true 
+          isActive: true
         }).sort({ createdAt: -1 });
         return jobs;
       } catch (error) {
         throw new Error(`Failed to fetch recruiter's jobs: ${error.message}`);
+      }
+    },
+  },
+
+  // ✅ FIXED: Jobs Stats Query
+  jobsStats: {
+    type: new GraphQLObjectType({
+      name: "JobsStats",
+      fields: {
+        totalJobs: { type: GraphQLString },
+        totalCompanies: { type: GraphQLString },
+        totalUsers: { type: GraphQLString },
+        totalApplications: { type: GraphQLString },
+      },
+    }),
+    async resolve() {
+      try {
+        const [totalJobs, totalUsers, totalApplications] = await Promise.all([
+          Job.countDocuments({ isActive: true }),
+          User.countDocuments(),
+          Application.countDocuments(),
+        ]);
+
+        // Get unique companies from jobs
+        const companies = await Job.distinct('company');
+        const totalCompanies = companies.length;
+
+        console.log('📊 Stats:', {
+          totalJobs,
+          totalCompanies,
+          totalUsers,
+          totalApplications,
+        });
+
+        return {
+          totalJobs: totalJobs.toString(),
+          totalCompanies: totalCompanies.toString(),
+          totalUsers: totalUsers.toString(),
+          totalApplications: totalApplications.toString(),
+        };
+      } catch (error) {
+        console.error('❌ Stats error:', error);
+        throw new Error(`Failed to fetch stats: ${error.message}`);
       }
     },
   },

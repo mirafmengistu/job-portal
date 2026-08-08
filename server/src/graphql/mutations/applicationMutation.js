@@ -4,14 +4,15 @@ import { Application } from "../../models/Application.js";
 import { Job } from "../../models/Job.js";
 
 export const applicationMutation = {
-  // Apply to a job (seeker)
+  // In applicationMutation.js
+
   applyToJob: {
     type: ApplicationType,
     args: {
       jobId: { type: GraphQLNonNull(GraphQLID) },
       applicantId: { type: GraphQLNonNull(GraphQLID) },
       coverLetter: { type: GraphQLString },
-      resume: { type: GraphQLNonNull(GraphQLString) },
+      resume: { type: GraphQLNonNull(GraphQLString) }, // Now stores Cloudinary URL
     },
     async resolve(parent, args) {
       try {
@@ -34,12 +35,12 @@ export const applicationMutation = {
           throw new Error('You have already applied to this job');
         }
 
-        // Create application
+        // Create application with Cloudinary URL
         const application = new Application({
           job: args.jobId,
           applicant: args.applicantId,
           coverLetter: args.coverLetter || '',
-          resume: args.resume,
+          resume: args.resume, // Cloudinary URL from frontend
           status: 'pending',
         });
 

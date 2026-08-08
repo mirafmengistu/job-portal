@@ -55,4 +55,24 @@ export const applicationQueries = {
       }
     },
   },
+
+  // ✅ FIXED: Check if user already applied to a specific job
+  checkApplicationStatus: {
+    type: new GraphQLList(ApplicationType),
+    args: {
+      jobId: { type: GraphQLID },
+      applicantId: { type: GraphQLID },
+    },
+    async resolve(parent, args) {
+      try {
+        const applications = await Application.find({
+          job: args.jobId,
+          applicant: args.applicantId,
+        });
+        return applications;
+      } catch (error) {
+        throw new Error(`Failed to check application status: ${error.message}`);
+      }
+    },
+  },
 };

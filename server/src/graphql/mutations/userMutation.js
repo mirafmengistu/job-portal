@@ -25,16 +25,13 @@ export const userMutation = {
     },
     async resolve(parent, args) {
       try {
-        // Check if user exists
         const existingUser = await User.findOne({ email: args.email });
         if (existingUser) {
           throw new Error('User already exists with this email');
         }
 
-        // Hash password
         const hashedPassword = await bcrypt.hash(args.password, 10);
 
-        // Create user
         const user = new User({
           name: args.name,
           email: args.email,
@@ -43,9 +40,6 @@ export const userMutation = {
         });
 
         await user.save();
-
-        // ✅ FIX: Return the Mongoose document directly
-        // GraphQL will use the resolve function in UserType to map _id → id
         return user;
       } catch (error) {
         throw new Error(`Signup failed: ${error.message}`);
@@ -55,26 +49,23 @@ export const userMutation = {
 
   // Login
   login: {
-    type: GraphQLString, // Returns token as string
+    type: GraphQLString,
     args: {
       email: { type: GraphQLNonNull(GraphQLString) },
       password: { type: GraphQLNonNull(GraphQLString) },
     },
     async resolve(parent, args) {
       try {
-        // Find user
         const user = await User.findOne({ email: args.email });
         if (!user) {
           throw new Error('Invalid credentials');
         }
 
-        // Check password
         const isPasswordValid = await bcrypt.compare(args.password, user.password);
         if (!isPasswordValid) {
           throw new Error('Invalid credentials');
         }
 
-        // Generate token
         const token = generateToken(user);
         return token;
       } catch (error) {
@@ -83,78 +74,110 @@ export const userMutation = {
     },
   },
 
-  // Save a job (bookmark)
-  saveJob: {
+  // ✅ ADD THIS: Update User
+  updateUser: {
     type: UserType,
     args: {
-      userId: { type: GraphQLNonNull(GraphQLID) },
-      jobId: { type: GraphQLNonNull(GraphQLID) },
+      id: { type: GraphQLNonNull(GraphQLID) },
+      name: { type: GraphQLString },
+      email: { type: GraphQLString },
     },
     async resolve(parent, args) {
       try {
-        const user = await User.findById(args.userId);
-        if (!user) {
-          throw new Error('User not found');
+        // Check if email is being changed and if it's already taken
+        if (args.email) {
+          const existingUser = await User.findOne({ 
+            email: args.email,
+            _id: { $ne: args.id } // Exclude current user
+          });
+          if (existingUser) {
+            throw new Error('Email already in use by another account');
+          }
         }
 
-        if (user.savedJobs.includes(args.jobId)) {
-          throw new Error('Job already saved');
-        }
-
-        user.savedJobs.push(args.jobId);
-        await user.save();
-
-        // Map _id to id and remove password
-        const userObject = user.toObject();
-        delete userObject.password;
-
-        return {
-          id: userObject._id,
-          name: userObject.name,
-          email: userObject.email,
-          role: userObject.role,
-          createdAt: userObject.createdAt,
-          updatedAt: userObject.updatedAt,
-        };
-      } catch (error) {
-        throw new Error(`Failed to save job: ${error.message}`);
-      }
-    },
-  },
-
-  // Unsave a job (remove bookmark)
-  unsaveJob: {
-    type: UserType,
-    args: {
-      userId: { type: GraphQLNonNull(GraphQLID) },
-      jobId: { type: GraphQLNonNull(GraphQLID) },
-    },
-    async resolve(parent, args) {
-      try {
-        const user = await User.findById(args.userId);
-        if (!user) {
-          throw new Error('User not found');
-        }
-
-        user.savedJobs = user.savedJobs.filter(
-          (jobId) => jobId.toString() !== args.jobId
+        const user = await User.findByIdAndUpdate(
+          args.id,
+          { 
+            $set: {
+              name: args.name,
+              email: args.email,
+            }
+          },
+          { new: true, runValidators: true }
         );
-        await user.save();
 
-        const userObject = user.toObject();
-        delete userObject.password;
+        if (!user) {
+          throw new Error('User not found');
+        }
 
-        return {
-          id: userObject._id,
-          name: userObject.name,
-          email: userObject.email,
-          role: userObject.role,
-          createdAt: userObject.createdAt,
-          updatedAt: userObject.updatedAt,
-        };
+        return user;
       } catch (error) {
-        throw new Error(`Failed to unsave job: ${error.message}`);
+        throw new Error(`Failed to update user: ${error.message}`);
       }
     },
   },
+
+  // Save a job (bookmark)
+saveJob: {
+  type: UserType,
+  args: {
+    userId: { type: GraphQLNonNull(GraphQLID) },
+    jobId: { type: GraphQLNonNull(GraphQLID) },
+  },
+  async resolve(parent, args) {
+    try {
+      const user = await User.findById(args.userId);
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      if (user.savedJobs.includes(args.jobId)) {
+        throw new Error('Job already saved');
+      }
+
+      user.savedJobs.push(args.jobId);
+      await user.save();
+
+      // ✅ Return the user with savedJobs populated
+      const updatedUser = await User.findById(args.userId)
+        .populate('savedJobs')
+        .select('-password');
+      
+      return updatedUser;
+    } catch (error) {
+      throw new Error(`Failed to save job: ${error.message}`);
+    }
+  },
+},
+
+// Unsave a job (remove bookmark)
+unsaveJob: {
+  type: UserType,
+  args: {
+    userId: { type: GraphQLNonNull(GraphQLID) },
+    jobId: { type: GraphQLNonNull(GraphQLID) },
+  },
+  async resolve(parent, args) {
+    try {
+      const user = await User.findById(args.userId);
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      user.savedJobs = user.savedJobs.filter(
+        (jobId) => jobId.toString() !== args.jobId
+      );
+      await user.save();
+
+      // ✅ Return the user with savedJobs populated
+      const updatedUser = await User.findById(args.userId)
+        .populate('savedJobs')
+        .select('-password');
+      
+      return updatedUser;
+    } catch (error) {
+      throw new Error(`Failed to unsave job: ${error.message}`);
+    }
+  },
+},
 };
