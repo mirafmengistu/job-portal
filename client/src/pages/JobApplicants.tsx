@@ -77,7 +77,7 @@ const JobApplicants = () => {
         );
     }
 
-    const applications = data?.applicationsByJob || [];
+    const applications = data?.applicationsByJob?.applications || [];
     const job = applications[0]?.job;
 
     const filteredApplications =

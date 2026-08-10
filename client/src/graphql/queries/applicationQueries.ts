@@ -2,49 +2,67 @@ import { gql } from '@apollo/client';
 import type { Application } from '../mutations/applicationMutations';
 
 export const GET_APPLICATIONS_BY_APPLICANT = gql`
-  query GetApplicationsByApplicant($applicantId: ID!) {
-    applicationsByApplicant(applicantId: $applicantId) {
-      id
-      status
-      job {
+  query GetApplicationsByApplicant($applicantId: ID!, $page: Int, $limit: Int) {
+    applicationsByApplicant(applicantId: $applicantId, page: $page, limit: $limit) {
+      applications {
         id
-        title
-        company
-        location
-        type
+        status
+        job {
+          id
+          title
+          company
+          location
+          type
+        }
+        applicant {
+          id
+          name
+          email
+        }
+        coverLetter
+        resume
+        createdAt
+        updatedAt
       }
-      applicant {
-        id
-        name
-        email
+      pageInfo {
+        currentPage
+        totalPages
+        totalCount
+        hasNextPage
+        hasPreviousPage
       }
-      coverLetter
-      resume
-      createdAt
-      updatedAt
     }
   }
 `;
 
 export const GET_APPLICATIONS_BY_JOB = gql`
-  query GetApplicationsByJob($jobId: ID!) {
-    applicationsByJob(jobId: $jobId) {
-      id
-      status
-      job {
+  query GetApplicationsByJob($jobId: ID!, $page: Int, $limit: Int) {
+    applicationsByJob(jobId: $jobId, page: $page, limit: $limit) {
+      applications {
         id
-        title
-        company
+        status
+        job {
+          id
+          title
+          company
+        }
+        applicant {
+          id
+          name
+          email
+        }
+        coverLetter
+        resume
+        createdAt
+        updatedAt
       }
-      applicant {
-        id
-        name
-        email
+      pageInfo {
+        currentPage
+        totalPages
+        totalCount
+        hasNextPage
+        hasPreviousPage
       }
-      coverLetter
-      resume
-      createdAt
-      updatedAt
     }
   }
 `;
@@ -90,11 +108,17 @@ export const CHECK_APPLICATION_STATUS = gql`
 
 // Types
 export type GetApplicationsByApplicantData = {
-  applicationsByApplicant: Application[];
+  applicationsByApplicant: {
+    applications: Application[];
+    pageInfo: PageInfo;
+  };
 };
 
 export type GetApplicationsByJobData = {
-  applicationsByJob: Application[];
+  applicationsByJob: {
+    applications: Application[];
+    pageInfo: PageInfo;
+  };
 };
 
 export type GetApplicationData = {
@@ -110,3 +134,14 @@ export type CheckApplicationStatusData = {
     status: string;
   }[];
 };
+
+export type PageInfo = {
+  currentPage: number;
+  totalPages: number;
+  totalCount: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+};
+
+
+

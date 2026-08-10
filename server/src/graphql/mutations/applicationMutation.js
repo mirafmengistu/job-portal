@@ -52,7 +52,7 @@ export const applicationMutation = {
     },
   },
 
-  // Update application status (recruiter)
+  // Update application status (recruiter) + create notification
   updateApplicationStatus: {
     type: ApplicationType,
     args: {
@@ -61,14 +61,53 @@ export const applicationMutation = {
     },
     async resolve(parent, args) {
       try {
-        const application = await Application.findByIdAndUpdate(
-          args.id,
-          { status: args.status },
-          { new: true, runValidators: true }
-        );
+        const application = await Application.findById(args.id)
+          .populate("job")
+          .populate("applicant");
+
         if (!application) {
-          throw new Error('Application not found');
+          throw new Error("Application not found");
         }
+
+        const previousStatus = application.status;
+        application.status = args.status;
+        await application.save();
+
+        // Only notify on meaningful status changes
+        const notifiableStatuses = ["shortlisted", "rejected", "hired"];
+
+        if (
+          previousStatus !== args.status &&
+          notifiableStatuses.includes(args.status)
+        ) {
+          const { Notification } = await import("../../models/Notification.js");
+
+          let title = "";
+          let message = "";
+
+          const jobTitle = application.job?.title || "the position";
+          const company = application.job?.company || "the company";
+
+          if (args.status === "hired") {
+            title = "Congratulations! You've been hired 🎉";
+            message = `We are pleased to inform you that you have been accepted for the position of "${jobTitle}" at ${company}. Welcome aboard!`;
+          } else if (args.status === "rejected") {
+            title = "Application Update";
+            message = `Thank you for applying to the position of "${jobTitle}" at ${company}. After careful consideration, we regret to inform you that we will not be moving forward with your application at this time.`;
+          } else if (args.status === "shortlisted") {
+            title = "You've been shortlisted!";
+            message = `Your application for "${jobTitle}" at ${company} has been reviewed and you have been shortlisted. We will contact you soon regarding the next steps.`;
+          }
+
+          await Notification.create({
+            recipient: application.applicant._id || application.applicant,
+            type: "application_status",
+            title,
+            message,
+            relatedApplication: application._id,
+          });
+        }
+
         return application;
       } catch (error) {
         throw new Error(`Failed to update application: ${error.message}`);

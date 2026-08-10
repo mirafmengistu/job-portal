@@ -31,7 +31,7 @@ const Home = () => {
 
   // Fetch featured jobs (latest 6)
   const { loading: jobsLoading, data: jobsData } = useQuery<GetJobsQueryData>(GET_JOBS_QUERY, {
-    variables: { search: '', location: '', type: '' },
+    variables: { search: '', location: '', type: '', page: 1, limit: 6 },
     fetchPolicy: 'cache-first',
   });
 
@@ -40,7 +40,7 @@ const Home = () => {
     fetchPolicy: 'cache-first',
   });
 
-  const featuredJobs = jobsData?.jobs?.slice(0, 6) || [];
+  const featuredJobs = jobsData?.jobs?.jobs?.slice(0, 6) || [];
   const stats = statsData?.jobsStats;
 
   const handleSearch = (e: React.FormEvent) => {

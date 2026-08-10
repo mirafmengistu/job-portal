@@ -11,6 +11,7 @@ import Dashboard from './pages/Dashboard';
 import ApplicationDetail from './pages/ApplicationDetail';
 import PostJob from './pages/PostJob';
 import Profile from './pages/Profile';
+import Notifications from './pages/Notifications';
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
           <Route path="applications/:id" element={<ApplicationDetail />} />
           <Route path="post-job" element={<PostJob />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="notifications" element={<Notifications />} />
         </Route>
       </Routes>
     </BrowserRouter>

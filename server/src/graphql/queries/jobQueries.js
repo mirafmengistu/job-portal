@@ -1,40 +1,62 @@
-import { GraphQLID, GraphQLList, GraphQLString, GraphQLObjectType } from "graphql";
+import { GraphQLID, GraphQLList, GraphQLString, GraphQLObjectType, GraphQLInt } from "graphql";
 import JobType from "../types/JobType.js";
+import JobConnectionType from "../types/pagination/JobConnectionType.js";
 import { Job } from "../../models/Job.js";
-import { User } from "../../models/User.js"; // ✅ Add this import
-import { Application } from "../../models/Application.js"; // ✅ Add this import
+import { User } from "../../models/User.js";
+import { Application } from "../../models/Application.js";
 
 export const jobQueries = {
-  // Get all jobs (with optional filters)
+  // Get all jobs (with optional filters + pagination)
   jobs: {
-    type: new GraphQLList(JobType),
+    type: JobConnectionType,
     args: {
       search: { type: GraphQLString },
       location: { type: GraphQLString },
       type: { type: GraphQLString },
+      page: { type: GraphQLInt, defaultValue: 1 },
+      limit: { type: GraphQLInt, defaultValue: 10 },
     },
     async resolve(parent, args) {
       try {
+        const page = Math.max(1, args.page || 1);
+        const limit = Math.min(50, Math.max(1, args.limit || 10)); // max 50 per page
+        const skip = (page - 1) * limit;
+
         let filter = { isActive: true };
 
         if (args.search) {
           filter.$or = [
-            { title: { $regex: args.search, $options: 'i' } },
-            { company: { $regex: args.search, $options: 'i' } },
-            { description: { $regex: args.search, $options: 'i' } },
+            { title: { $regex: args.search, $options: "i" } },
+            { company: { $regex: args.search, $options: "i" } },
+            { description: { $regex: args.search, $options: "i" } },
           ];
         }
 
         if (args.location) {
-          filter.location = { $regex: args.location, $options: 'i' };
+          filter.location = { $regex: args.location, $options: "i" };
         }
 
         if (args.type) {
           filter.type = args.type;
         }
 
-        const jobs = await Job.find(filter).sort({ createdAt: -1 });
-        return jobs;
+        const [jobs, totalCount] = await Promise.all([
+          Job.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit),
+          Job.countDocuments(filter),
+        ]);
+
+        const totalPages = Math.ceil(totalCount / limit) || 1;
+
+        return {
+          jobs,
+          pageInfo: {
+            currentPage: page,
+            totalPages,
+            totalCount,
+            hasNextPage: page < totalPages,
+            hasPreviousPage: page > 1,
+          },
+        };
       } catch (error) {
         throw new Error(`Failed to fetch jobs: ${error.message}`);
       }
@@ -51,7 +73,7 @@ export const jobQueries = {
       try {
         const job = await Job.findById(args.id);
         if (!job) {
-          throw new Error('Job not found');
+          throw new Error("Job not found");
         }
         return job;
       } catch (error) {
@@ -60,26 +82,49 @@ export const jobQueries = {
     },
   },
 
-  // Get jobs posted by a specific recruiter
+  // Get jobs posted by a specific recruiter (with pagination)
   jobsByRecruiter: {
-    type: new GraphQLList(JobType),
+    type: JobConnectionType,
     args: {
       recruiterId: { type: GraphQLID },
+      page: { type: GraphQLInt, defaultValue: 1 },
+      limit: { type: GraphQLInt, defaultValue: 10 },
     },
     async resolve(parent, args) {
       try {
-        const jobs = await Job.find({
+        const page = Math.max(1, args.page || 1);
+        const limit = Math.min(50, Math.max(1, args.limit || 10));
+        const skip = (page - 1) * limit;
+
+        const filter = {
           postedBy: args.recruiterId,
-          isActive: true
-        }).sort({ createdAt: -1 });
-        return jobs;
+          isActive: true,
+        };
+
+        const [jobs, totalCount] = await Promise.all([
+          Job.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit),
+          Job.countDocuments(filter),
+        ]);
+
+        const totalPages = Math.ceil(totalCount / limit) || 1;
+
+        return {
+          jobs,
+          pageInfo: {
+            currentPage: page,
+            totalPages,
+            totalCount,
+            hasNextPage: page < totalPages,
+            hasPreviousPage: page > 1,
+          },
+        };
       } catch (error) {
         throw new Error(`Failed to fetch recruiter's jobs: ${error.message}`);
       }
     },
   },
 
-  // ✅ FIXED: Jobs Stats Query
+  // Jobs Stats Query
   jobsStats: {
     type: new GraphQLObjectType({
       name: "JobsStats",
@@ -98,16 +143,8 @@ export const jobQueries = {
           Application.countDocuments(),
         ]);
 
-        // Get unique companies from jobs
-        const companies = await Job.distinct('company');
+        const companies = await Job.distinct("company");
         const totalCompanies = companies.length;
-
-        console.log('📊 Stats:', {
-          totalJobs,
-          totalCompanies,
-          totalUsers,
-          totalApplications,
-        });
 
         return {
           totalJobs: totalJobs.toString(),
@@ -116,7 +153,6 @@ export const jobQueries = {
           totalApplications: totalApplications.toString(),
         };
       } catch (error) {
-        console.error('❌ Stats error:', error);
         throw new Error(`Failed to fetch stats: ${error.message}`);
       }
     },

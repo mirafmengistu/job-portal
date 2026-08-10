@@ -101,7 +101,7 @@ const SeekerDashboard = ({ userId }: { userId: string }) => {
     );
   }
 
-  const applications = data?.applicationsByApplicant || [];
+  const applications = data?.applicationsByApplicant?.applications || [];
   const savedJobs = savedJobsData?.savedJobs || [];
 
   const totalApplications = applications.length;
@@ -315,7 +315,7 @@ const RecruiterDashboard = ({ userId }: { userId: string }) => {
     );
   }
 
-  const jobs = (data?.jobsByRecruiter || []) as JobWithApplications[];
+  const jobs = (data?.jobsByRecruiter?.jobs || []) as JobWithApplications[];
   const totalJobs = jobs.length;
   const activeJobs = jobs.filter((job) => job.isActive).length;
   

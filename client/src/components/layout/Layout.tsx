@@ -2,10 +2,25 @@ import { useState } from 'react';
 import { Outlet, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '@/components/ui/button';
-import { User, Briefcase, LogOut, Menu, X } from 'lucide-react';
+import { User, Briefcase, LogOut, Menu, X, Bell } from 'lucide-react';
+import { useQuery } from '@apollo/client/react';
+import {
+  UNREAD_NOTIFICATIONS_COUNT_QUERY,
+  type UnreadNotificationsCountQueryData,
+} from '../../graphql/mutations/notificationMutations';
 
 const Layout = () => {
   const { isAuthenticated, logout, user } = useAuth();
+  const { data: unreadData } = useQuery<UnreadNotificationsCountQueryData>(
+    UNREAD_NOTIFICATIONS_COUNT_QUERY,
+    {
+      variables: { userId: user?.id },
+      skip: !user?.id,
+      pollInterval: 30000, // refresh every 30 seconds
+    }
+  );
+
+  const unreadCount = unreadData?.unreadNotificationsCount || 0;
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const getInitials = (name: string) => {
@@ -48,6 +63,19 @@ const Layout = () => {
                     Post Job
                   </Link>
                 )}
+
+                {/* Notification Bell */}
+<Link
+  to="/notifications"
+  className="relative p-2 rounded-xl hover:bg-muted/60 transition-colors border border-transparent hover:border-border"
+>
+  <Bell className="w-5 h-5 text-muted-foreground" />
+  {unreadCount > 0 && (
+    <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">
+      {unreadCount > 9 ? '9+' : unreadCount}
+    </span>
+  )}
+</Link>
 
                 <div className="relative group">
                   <button
@@ -153,6 +181,21 @@ const Layout = () => {
                     Post Job
                   </Link>
                 )}
+
+<Link
+  to="/notifications"
+  onClick={closeMobile}
+  className="flex items-center gap-2 py-2.5 px-3 rounded-lg text-sm font-medium hover:bg-muted transition-colors"
+>
+  <Bell className="w-4 h-4" />
+  Notifications
+  {unreadCount > 0 && (
+    <span className="ml-auto min-w-[20px] h-5 px-1.5 rounded-full bg-destructive text-destructive-foreground text-xs font-bold flex items-center justify-center">
+      {unreadCount > 9 ? '9+' : unreadCount}
+    </span>
+  )}
+</Link>
+
                 <Link
                   to="/profile"
                   onClick={closeMobile}
