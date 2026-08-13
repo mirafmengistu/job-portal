@@ -68,6 +68,16 @@ export const UNSAVE_JOB_MUTATION = gql`
   }
 `;
 
+export const GOOGLE_LOGIN_MUTATION = gql`
+  mutation GoogleLogin($idToken: String!) {
+    googleLogin(idToken: $idToken)
+  }
+`;
+
+export type GoogleLoginMutationData = {
+  googleLogin: string; // JWT
+};
+
 // 📌 ADD THESE TYPES FOR USE IN COMPONENTS
 export type SignupMutationData = {
   signup: {

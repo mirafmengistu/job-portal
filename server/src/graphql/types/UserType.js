@@ -1,4 +1,4 @@
-import { GraphQLObjectType, GraphQLID, GraphQLString, GraphQLList } from "graphql";
+import { GraphQLObjectType, GraphQLID, GraphQLString, GraphQLList, GraphQLBoolean } from "graphql";
 import JobType from "./JobType.js";
 
 const UserType = new GraphQLObjectType({
@@ -8,6 +8,7 @@ const UserType = new GraphQLObjectType({
     name: { type: GraphQLString },
     email: { type: GraphQLString },
     role: { type: GraphQLString },
+    isActive: {type: GraphQLBoolean},
     createdAt: { type: GraphQLString },
     updatedAt: { type: GraphQLString },
     

@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import LoadingSpinner from '../components/common/LoadingSpinner';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import {
   Briefcase,
@@ -60,6 +60,11 @@ const Dashboard = () => {
         </Link>
       </div>
     );
+  }
+
+  // Admin → redirect to admin panel
+  if (user?.role === 'admin') {
+    return <Navigate to="/admin" replace />;
   }
 
   if (user?.role === 'seeker') {

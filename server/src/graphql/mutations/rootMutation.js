@@ -3,6 +3,7 @@ import { userMutation } from "./userMutation.js";
 import { jobMutation } from "./jobMutation.js";
 import { applicationMutation } from "./applicationMutation.js";
 import { notificationMutation } from "./notificationMutation.js";
+import { adminMutation } from "./adminMutation.js";
 
 const rootMutation = new GraphQLObjectType({
   name: "RootMutation",
@@ -11,6 +12,7 @@ const rootMutation = new GraphQLObjectType({
     ...jobMutation, 
     ...applicationMutation,
     ...notificationMutation,
+    ...adminMutation,
   },
 });
 

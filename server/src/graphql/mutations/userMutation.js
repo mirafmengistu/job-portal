@@ -3,6 +3,9 @@ import UserType from "../types/UserType.js";
 import { User } from "../../models/User.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { OAuth2Client } from "google-auth-library";
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // Helper to generate token
 const generateToken = (user) => {
@@ -70,6 +73,74 @@ export const userMutation = {
         return token;
       } catch (error) {
         throw new Error(`Login failed: ${error.message}`);
+      }
+    },
+  },
+
+    // Google OAuth Login
+  googleLogin: {
+    type: GraphQLString, // returns JWT (same as login)
+    args: {
+      idToken: { type: GraphQLNonNull(GraphQLString) },
+    },
+    async resolve(parent, args) {
+      try {
+        // 1. Verify token with Google
+        const ticket = await googleClient.verifyIdToken({
+          idToken: args.idToken,
+          audience: process.env.GOOGLE_CLIENT_ID,
+        });
+
+        const payload = ticket.getPayload();
+        if (!payload) {
+          throw new Error("Invalid Google token");
+        }
+
+        const { sub: googleId, email, name, email_verified } = payload;
+
+        if (!email) {
+          throw new Error("Google account has no email");
+        }
+
+        if (email_verified === false) {
+          throw new Error("Google email not verified");
+        }
+
+        // 2. Find existing user by googleId or email
+        let user = await User.findOne({
+          $or: [{ googleId }, { email: email.toLowerCase() }],
+        });
+
+        if (user) {
+          // Link googleId if user existed with email/password
+          if (!user.googleId) {
+            user.googleId = googleId;
+            user.authProvider = user.authProvider || "local";
+            await user.save();
+          }
+
+          if (!user.isActive) {
+            throw new Error("Your account has been deactivated");
+          }
+        } else {
+          // 3. Create new user
+          user = new User({
+            name: name || email.split("@")[0],
+            email: email.toLowerCase(),
+            googleId,
+            authProvider: "google",
+            role: "seeker",
+            isActive: true,
+            // no password
+          });
+          await user.save();
+        }
+
+        // 4. Issue your JWT (same helper as login)
+        const token = generateToken(user);
+        return token;
+      } catch (error) {
+        throw new Error(`Google login failed: ${error.message}`);
       }
     },
   },

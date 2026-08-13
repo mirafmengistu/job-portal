@@ -12,6 +12,11 @@ import ApplicationDetail from './pages/ApplicationDetail';
 import PostJob from './pages/PostJob';
 import Profile from './pages/Profile';
 import Notifications from './pages/Notifications';
+import AdminLayout from './components/admin/AdminLayout';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminUsers from './pages/admin/AdminUsers';
+import AdminJobs from './pages/admin/AdminJobs';
+import AdminAuditLogs from './pages/admin/AdminAuditLogs';
 
 function App() {
   return (
@@ -30,6 +35,13 @@ function App() {
           <Route path="post-job" element={<PostJob />} />
           <Route path="profile" element={<Profile />} />
           <Route path="notifications" element={<Notifications />} />
+        </Route>
+        {/* Admin routes */}
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<AdminDashboard />} />
+          <Route path="users" element={<AdminUsers />} />
+          <Route path="jobs" element={<AdminJobs />} />
+          <Route path="audit-logs" element={<AdminAuditLogs/>}></Route>
         </Route>
       </Routes>
     </BrowserRouter>
