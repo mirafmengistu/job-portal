@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MapPin, Briefcase, DollarSign, Calendar } from 'lucide-react';
+import { MapPin, DollarSign, Calendar } from 'lucide-react';
 import type { Job } from '../../graphql/queries/jobQueries';
 import SaveJobButton from './SaveJobButton';
 
@@ -12,7 +12,7 @@ interface JobCardProps {
   onSaveToggle?: () => void;
 }
 
-const JobCard = ({ job, isSaved, onSaveToggle }: JobCardProps) => {
+const JobCard = ({ job, isSaved: _isSaved, onSaveToggle: _onSaveToggle }: JobCardProps) => {
   const formatDate = (dateString: string) => {
     const date = new Date(parseInt(dateString));
     return date.toLocaleDateString('en-US', {

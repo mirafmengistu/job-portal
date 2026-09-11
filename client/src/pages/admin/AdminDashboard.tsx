@@ -5,7 +5,7 @@ import {
   type AdminStatsQueryData,
 } from '../../graphql/mutations/adminMutations';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Briefcase, FileText, UserCheck, UserX } from 'lucide-react';
+import { Users, Briefcase, FileText, UserCheck} from 'lucide-react';
 import { Loader2 } from 'lucide-react';
 
 const AdminDashboard = () => {

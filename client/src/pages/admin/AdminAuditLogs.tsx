@@ -82,7 +82,7 @@ const AdminAuditLogs = () => {
         <Select
           value={actionFilter || 'all'}
           onValueChange={(val) => {
-            setActionFilter(val === 'all' ? '' : val);
+            setActionFilter(val === 'all' || val === null ? '' : val);
             setPage(1);
           }}
         >
@@ -103,7 +103,7 @@ const AdminAuditLogs = () => {
         <Select
           value={targetTypeFilter || 'all'}
           onValueChange={(val) => {
-            setTargetTypeFilter(val === 'all' ? '' : val);
+            setTargetTypeFilter(val === 'all' || val === null ? '' : val);
             setPage(1);
           }}
         >

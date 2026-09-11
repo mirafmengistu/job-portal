@@ -18,8 +18,6 @@ import {
   Sparkles,
   Shield,
   Zap,
-  TrendingUp,
-  ChevronRight
 } from 'lucide-react';
 import { GET_JOBS_QUERY, GET_STATS_QUERY, type GetJobsQueryData, type GetStatsQueryData } from '../graphql/queries/jobQueries';
 import LoadingSpinner from '../components/common/LoadingSpinner';
@@ -36,7 +34,7 @@ const Home = () => {
   });
 
   // Fetch stats
-  const { loading: statsLoading, data: statsData } = useQuery<GetStatsQueryData>(GET_STATS_QUERY, {
+  const { data: statsData } = useQuery<GetStatsQueryData>(GET_STATS_QUERY, {
     fetchPolicy: 'cache-first',
   });
 
