@@ -8,6 +8,7 @@ import {
   UNREAD_NOTIFICATIONS_COUNT_QUERY,
   type UnreadNotificationsCountQueryData,
 } from '../../graphql/mutations/notificationMutations';
+import { ThemeToggle } from '../common/ThemeToggle';
 
 const Layout = () => {
   const { isAuthenticated, logout, user } = useAuth();
@@ -99,6 +100,8 @@ const Layout = () => {
                       {user?.name?.split(' ')[0]}
                     </span>
                   </button>
+
+                  <ThemeToggle />
 
                   <div className="absolute right-0 mt-2 w-56 bg-card text-card-foreground rounded-xl shadow-xl border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
                     <div className="p-3 border-b border-border bg-muted/30">
@@ -205,6 +208,11 @@ const Layout = () => {
                     </span>
                   )}
                 </Link>
+
+                <div className="flex items-center justify-between px-3 py-2 mb-1">
+                  <span className="text-sm font-medium text-muted-foreground">Theme</span>
+                  <ThemeToggle />
+                </div>
 
                 <Link
                   to="/profile"
